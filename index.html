@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>锻炼打卡</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="date-nav">
+      <button class="date-arrow" id="datePrev">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="date-center">
+        <div class="date-display" id="dateDisplay"></div>
+        <div class="day-label" id="dayLabel"></div>
+      </div>
+      <button class="date-arrow" id="dateNext">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+    <div class="header-meta">
+      <span class="duration-badge" id="durationBadge">~20分钟</span>
+      <button class="btn-settings" id="btnSettings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Today Summary Bar -->
+  <div class="summary-bar" id="summaryBar">
+    <div class="summary-item">
+      <div class="summary-ring" id="progressRing">
+        <svg viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="2.5"/>
+          <circle cx="18" cy="18" r="15.9" fill="none" stroke="#34c759" stroke-width="2.5"
+            stroke-dasharray="100" stroke-dashoffset="0" stroke-linecap="round"
+            transform="rotate(-90 18 18)" id="progressCircle"/>
+        </svg>
+        <span class="summary-pct" id="summaryPct">0%</span>
+      </div>
+      <span class="summary-label">完成度</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <span class="summary-val" id="summaryCal">0</span>
+      <span class="summary-unit">kcal</span>
+      <span class="summary-label">预计消耗</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <div class="summary-val-row">
+        <span class="summary-val" id="summaryDone">0</span>
+        <span class="summary-unit">/ <span id="summaryTotal">0</span></span>
+      </div>
+      <span class="summary-label">动作完成</span>
+    </div>
+  </div>
+
+  <!-- Workout Title -->
+  <div class="workout-title-bar">
+    <h2 id="workoutTitle">今日锻炼</h2>
+    <div class="title-right">
+      <span class="intensity-badge" id="intensityBadge">标准</span>
+      <button class="btn-stats" id="btnStats">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Checklist -->
+  <main class="checklist" id="checklist"></main>
+
+  <!-- Stats Page -->
+  <div class="page hidden" id="statsPage">
+    <div class="stats-header">
+      <button class="btn-back" id="btnBack">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        返回
+      </button>
+      <h2>统计</h2>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card sc-green"><div class="stat-val" id="statStreak">0</div><div class="stat-lbl">连续打卡</div></div>
+      <div class="stat-card sc-blue"><div class="stat-val" id="statTotal">0</div><div class="stat-lbl">总打卡天数</div></div>
+      <div class="stat-card sc-orange"><div class="stat-val" id="statCal">0</div><div class="stat-lbl">总消耗 kcal</div></div>
+      <div class="stat-card sc-purple"><div class="stat-val" id="statWeek">0%</div><div class="stat-lbl">本周完成率</div></div>
+    </div>
+    <div class="range-selector">
+      <button class="range-btn active" data-range="7">近7天</button>
+      <button class="range-btn" data-range="30">近30天</button>
+      <button class="btn-export" id="btnExport">导出 .md</button>
+    </div>
+    <div class="chart-card">
+      <h3>每日完成率</h3>
+      <canvas id="lineChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>锻炼部位分布</h3>
+      <canvas id="pieChart"></canvas>
+    </div>
+    <div class="stats-section">
+      <h3>最近记录</h3>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- Confetti -->
+  <div class="confetti-container" id="confettiContainer"></div>
+
+  <!-- Settings Panel -->
+  <div class="modal hidden" id="settingsModal">
+    <div class="modal-backdrop" onclick="App.closeSettings()"></div>
+    <div class="modal-content settings-panel">
+      <div class="modal-handle"></div>
+      <button class="modal-close" onclick="App.closeSettings()">✕</button>
+      <h2>设置</h2>
+      <div class="settings-list">
+        <div class="setting-row">
+          <span>训练重点</span>
+          <div class="toggle-group focus-group">
+            <button class="toggle-btn" data-focus="arm">手臂</button>
+            <button class="toggle-btn" data-focus="chest">胸部</button>
+            <button class="toggle-btn" data-focus="leg">腿部</button>
+            <button class="toggle-btn" data-focus="shoulder">肩部</button>
+            <button class="toggle-btn" data-focus="full">全身</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>强度模式</span>
+          <div class="toggle-group">
+            <button class="toggle-btn active" data-intensity="easy">轻松</button>
+            <button class="toggle-btn" data-intensity="standard">标准</button>
+            <button class="toggle-btn" data-intensity="hard">强化</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>饮水目标</span>
+          <div class="stepper">
+            <button class="btn-sm" onclick="App.settings.adjustTarget('water',-1)">−</button>
+            <span id="waterTargetSetting">8</span> 杯
+            <button class="btn-sm" onclick="App.settings.adjustTarget('water',1)">+</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>蛋白质目标</span>
+          <div class="stepper">
+            <button class="btn-sm" onclick="App.settings.adjustTarget('protein',-10)">−</button>
+            <span id="proteinTargetSetting">120</span> g
+            <button class="btn-sm" onclick="App.settings.adjustTarget('protein',10)">+</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>重置今日</span>
+          <button class="btn-danger" onclick="App.resetToday()">重置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="exercises.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
