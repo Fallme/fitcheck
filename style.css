@@ -259,7 +259,13 @@ body {
 
 /* Nutrition */
 .nutri-bar-wrap { height: 4px; background: var(--gray6); border-radius: 2px; margin: 6px 0 8px; overflow: hidden; }
-.nutri-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+.nutri-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
+.nutri-bar-fill.bump { animation: barBump 0.5s ease; }
+@keyframes barBump {
+  0% { transform: scaleY(1); }
+  30% { transform: scaleY(1.8); }
+  100% { transform: scaleY(1); }
+}
 .nutri-bar-fill.water { background: var(--blue); }
 .nutri-bar-fill.protein { background: var(--red); }
 .nutri-counter { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 700; }

@@ -357,13 +357,21 @@ const App = (() => {
       if(wrap){const open=wrap.classList.toggle('open');b.textContent=open?'收起 ▴':'详情 ▾';}
     }));
     list.querySelectorAll('.ci-skip').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();toggleSkip(b.dataset.ex);}));
-    list.querySelectorAll('.nutri-btn').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();adjustNutrition(b.dataset.nutri,parseInt(b.dataset.dir));}));
+    list.querySelectorAll('.nutri-btn').forEach(b=>b.addEventListener('click',e=>{
+      e.stopPropagation();adjustNutrition(b.dataset.nutri,parseInt(b.dataset.dir));
+      const key=b.dataset.nutri;
+      const bar=document.querySelector(`.nutri-bar-fill.${key}`);
+      if(bar){bar.classList.remove('bump');void bar.offsetWidth;bar.classList.add('bump');}
+    }));
     list.querySelectorAll('.food-btn').forEach(b=>b.addEventListener('click',e=>{
       e.stopPropagation();
       const grams=parseInt(b.dataset.food);
       const data=getDateData(viewDate);
       data.nutrition.protein+=grams;
       saveState();renderChecklist();
+      // Trigger bump animation on protein bar
+      const bar=document.querySelector('.nutri-bar-fill.protein');
+      if(bar){bar.classList.remove('bump');void bar.offsetWidth;bar.classList.add('bump');}
     }));
   }
 
