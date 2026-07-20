@@ -232,7 +232,16 @@ const App = (() => {
     const list=document.getElementById('checklist');
     list.innerHTML='';
 
-    plan.exercises.forEach(exId=>{
+    // Sort: incomplete first, completed/skipped at bottom
+    const sortedExercises = [...plan.exercises].sort((a,b) => {
+      const aData = data.exercises[a] || {completed:false,skipped:false};
+      const bData = data.exercises[b] || {completed:false,skipped:false};
+      const aDone = (aData.completed || aData.skipped) ? 1 : 0;
+      const bDone = (bData.completed || bData.skipped) ? 1 : 0;
+      return aDone - bDone;
+    });
+
+    sortedExercises.forEach(exId=>{
       const ex=EXERCISES[exId];
       const exData=data.exercises[exId]||{doneSets:0,completed:false,skipped:false};
       const sets=ex.sets[state.intensity],reps=ex.reps[state.intensity];
