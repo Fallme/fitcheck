@@ -367,20 +367,34 @@ const App = (() => {
     }));
     list.querySelectorAll('.ci-skip').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();toggleSkip(b.dataset.ex);}));
     list.querySelectorAll('.nutri-btn').forEach(b=>b.addEventListener('click',e=>{
-      e.stopPropagation();adjustNutrition(b.dataset.nutri,parseInt(b.dataset.dir));
+      e.stopPropagation();
+      adjustNutrition(b.dataset.nutri,parseInt(b.dataset.dir));
+      // Update water display in-place
       const key=b.dataset.nutri;
-      const bar=document.querySelector(`.nutri-bar-fill.${key}`);
-      if(bar){bar.classList.remove('bump');void bar.offsetWidth;bar.classList.add('bump');}
+      const data=getDateData(viewDate);
+      const count=key==='water'?data.nutrition.water:data.nutrition.protein;
+      const target=key==='water'?state.waterTarget:state.proteinTarget;
+      const pct=Math.min(100,(count/target)*100);
+      // Find the correct nutrition card (water is first, protein is last check-item)
+      const items=document.querySelectorAll('.check-item');
+      const item=key==='water'?items[items.length-2]:items[items.length-1];
+      if(!item)return;
+      const countSpan=item.querySelector('.nutri-counter span');
+      if(countSpan)countSpan.textContent=count;
+      const bar=item.querySelector('.nutri-bar-fill');
+      if(bar){bar.style.width=`${pct}%`;bar.classList.remove('bump');void bar.offsetWidth;bar.classList.add('bump');}
+      const checkBtn=item.querySelector('.ci-check');
+      if(checkBtn)checkBtn.textContent=count>=target?'✓':'';
+      item.classList.toggle('done',count>=target);
     }));
     list.querySelectorAll('.food-btn').forEach(b=>b.addEventListener('click',e=>{
       e.stopPropagation();
       const grams=parseInt(b.dataset.food);
       const data=getDateData(viewDate);
       data.nutrition.protein+=grams;
-      saveState();renderChecklist();
-      // Trigger bump animation on protein bar
-      const bar=document.querySelector('.nutri-bar-fill.protein');
-      if(bar){bar.classList.remove('bump');void bar.offsetWidth;bar.classList.add('bump');}
+      saveState();
+      // Update protein display in-place without re-rendering checklist
+      updateProteinDisplay(data);
     }));
   }
 
@@ -425,6 +439,30 @@ const App = (() => {
     data.nutrition[key]=data.nutrition[key]>=target?0:target;
     saveState();renderChecklist();
   }
+  function updateProteinDisplay(data) {
+    const proteinCount = data.nutrition.protein;
+    const pct = Math.min(100, (proteinCount / state.proteinTarget) * 100);
+    const done = proteinCount >= state.proteinTarget;
+    // Update count text
+    const counter = document.querySelectorAll('.check-item')[document.querySelectorAll('.check-item').length - 1];
+    if (!counter) return;
+    const countEl = counter.querySelector('.nutri-counter span');
+    if (countEl) countEl.textContent = proteinCount;
+    // Update progress bar
+    const bar = counter.querySelector('.nutri-bar-fill');
+    if (bar) {
+      bar.style.width = `${pct}%`;
+      bar.classList.remove('bump');
+      void bar.offsetWidth;
+      bar.classList.add('bump');
+    }
+    // Update check button
+    const checkBtn = counter.querySelector('.ci-check');
+    if (checkBtn) checkBtn.textContent = done ? '✓' : '';
+    counter.classList.toggle('done', done);
+    renderSummary();
+  }
+
   function adjustNutrition(key,dir){
     const data=getDateData(viewDate);
     data.nutrition[key]=Math.max(0,data.nutrition[key]+dir*(key==='water'?1:10));
