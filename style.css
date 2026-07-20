@@ -283,20 +283,23 @@ body {
 }
 .nutri-btn:active { transform: scale(0.88); background: var(--gray6); }
 
-/* Food grid - single row scrollable */
+/* Food grid - responsive wrap */
 .food-grid {
-  display: flex; gap: 6px; margin-top: 8px; overflow-x: auto;
-  -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px;
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
 }
-.food-grid::-webkit-scrollbar { display: none; }
 .food-btn {
-  flex-shrink: 0; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--separator);
-  background: var(--card); font-size: 0.75rem; font-weight: 500;
-  cursor: pointer; display: flex; align-items: center; gap: 4px;
+  flex: 1 1 auto; min-width: 0; padding: 7px 10px; border-radius: 10px;
+  border: 1px solid var(--separator); background: var(--card);
+  font-size: 0.75rem; font-weight: 500; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
   transition: all 0.15s; color: var(--text); white-space: nowrap;
 }
 .food-btn:active { transform: scale(0.92); background: var(--accent-light); border-color: var(--accent); }
 .food-grams { font-size: 0.65rem; color: var(--accent-dark); font-weight: 700; }
+@media (max-width: 400px) {
+  .food-btn { padding: 5px 6px; font-size: 0.68rem; min-width: calc(33% - 4px); }
+  .food-grams { font-size: 0.6rem; }
+}
 
 /* ===== Stats Page ===== */
 .page { padding: 0 16px 24px; }
