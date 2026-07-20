@@ -314,12 +314,12 @@ const App = (() => {
     // Protein with food items
     const proteinCount=data.nutrition.protein,proteinPct=Math.min(100,(proteinCount/state.proteinTarget)*100),proteinDone=proteinCount>=state.proteinTarget;
     const proteinFoods=[
-      {name:'🥚 鸡蛋', grams:10},
-      {name:'🥛 牛奶', grams:10},
-      {name:'🍗 鸡胸肉', grams:25},
-      {name:'🥤 蛋白粉', grams:25},
-      {name:'🐟 鱼肉', grams:20},
-      {name:'🥩 牛肉', grams:26}
+      {name:'🥚 鸡蛋 1个', grams:10},
+      {name:'🥛 牛奶 250ml', grams:10},
+      {name:'🍗 鸡胸肉 100g', grams:25},
+      {name:'🥤 蛋白粉 1勺', grams:10},
+      {name:'🐟 鱼肉 100g', grams:20},
+      {name:'🥩 牛肉 100g', grams:26}
     ];
     const proteinItem=document.createElement('div');proteinItem.className=`check-item ${proteinDone?'done':''}`;
     proteinItem.innerHTML=`<button class="ci-check" data-nutri="protein">${proteinDone?'✓':''}</button>
