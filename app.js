@@ -175,6 +175,18 @@ const App = (() => {
         renderStats();
       });
     });
+    // Auto-detect date change: check every 30s, if date changed reset to today
+    let lastDateKey = dateKey(viewDate);
+    setInterval(()=>{
+      const today = new Date();
+      const todayKey = dateKey(today);
+      if (todayKey !== lastDateKey) {
+        lastDateKey = todayKey;
+        viewDate = today;
+        prevPct = 0;
+        render();
+      }
+    }, 30000);
     // Check if today was already completed (for confetti state)
     const data=getDateData(viewDate);
     const plan=getWeeklyPlan(state.focus)[viewDate.getDay()];
@@ -290,16 +302,32 @@ const App = (() => {
     }
 
     // Nutrition
-    [{key:'water',icon:'💧',label:'饮水',target:state.waterTarget,unit:'杯',barClass:'water'},
-     {key:'protein',icon:'🥩',label:'蛋白质',target:state.proteinTarget,unit:'g',barClass:'protein'}].forEach(n=>{
-      const count=data.nutrition[n.key],pct=Math.min(100,(count/n.target)*100),done=count>=n.target;
-      const item=document.createElement('div');item.className=`check-item ${done?'done':''}`;
-      item.innerHTML=`<button class="ci-check" data-nutri="${n.key}">${done?'✓':''}</button>
-        <div class="ci-body"><div class="ci-row"><span class="ci-name">${n.icon} ${n.label}</span><span class="ci-tag tag-nutrition">补充</span></div>
-        <div class="nutri-bar-wrap"><div class="nutri-bar-fill ${n.barClass}" style="width:${pct}%"></div></div>
-        <div class="nutri-counter"><button class="nutri-btn" data-nutri="${n.key}" data-dir="-1">−</button><span>${count}</span> / <span>${n.target}</span> ${n.unit}<button class="nutri-btn" data-nutri="${n.key}" data-dir="1">+</button></div></div>`;
-      list.appendChild(item);
-    });
+    // Water
+    const waterCount=data.nutrition.water,waterPct=Math.min(100,(waterCount/state.waterTarget)*100),waterDone=waterCount>=state.waterTarget;
+    const waterItem=document.createElement('div');waterItem.className=`check-item ${waterDone?'done':''}`;
+    waterItem.innerHTML=`<button class="ci-check" data-nutri="water">${waterDone?'✓':''}</button>
+      <div class="ci-body"><div class="ci-row"><span class="ci-name">💧 饮水</span><span class="ci-tag tag-nutrition">补充</span></div>
+      <div class="nutri-bar-wrap"><div class="nutri-bar-fill water" style="width:${waterPct}%"></div></div>
+      <div class="nutri-counter"><button class="nutri-btn" data-nutri="water" data-dir="-1">−</button><span>${waterCount}</span> / <span>${state.waterTarget}</span> 杯<button class="nutri-btn" data-nutri="water" data-dir="1">+</button></div></div>`;
+    list.appendChild(waterItem);
+
+    // Protein with food items
+    const proteinCount=data.nutrition.protein,proteinPct=Math.min(100,(proteinCount/state.proteinTarget)*100),proteinDone=proteinCount>=state.proteinTarget;
+    const proteinFoods=[
+      {name:'🥚 鸡蛋', grams:10},
+      {name:'🥛 牛奶', grams:10},
+      {name:'🍗 鸡胸肉', grams:25},
+      {name:'🥤 蛋白粉', grams:25},
+      {name:'🐟 鱼肉', grams:20},
+      {name:'🥩 牛肉', grams:26}
+    ];
+    const proteinItem=document.createElement('div');proteinItem.className=`check-item ${proteinDone?'done':''}`;
+    proteinItem.innerHTML=`<button class="ci-check" data-nutri="protein">${proteinDone?'✓':''}</button>
+      <div class="ci-body"><div class="ci-row"><span class="ci-name">🥩 蛋白质</span><span class="ci-tag tag-nutrition">补充</span></div>
+      <div class="nutri-bar-wrap"><div class="nutri-bar-fill protein" style="width:${proteinPct}%"></div></div>
+      <div class="nutri-counter"><span style="font-size:0.9rem;font-weight:800">${proteinCount}</span> / <span>${state.proteinTarget}</span> g</div>
+      <div class="food-grid">${proteinFoods.map(f=>`<button class="food-btn" data-food="${f.grams}">${f.name}<span class="food-grams">+${f.grams}g</span></button>`).join('')}</div></div>`;
+    list.appendChild(proteinItem);
 
     // Bind
     list.querySelectorAll('.ci-check[data-ex]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();toggleExercise(b.dataset.ex);}));
@@ -330,6 +358,13 @@ const App = (() => {
     }));
     list.querySelectorAll('.ci-skip').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();toggleSkip(b.dataset.ex);}));
     list.querySelectorAll('.nutri-btn').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();adjustNutrition(b.dataset.nutri,parseInt(b.dataset.dir));}));
+    list.querySelectorAll('.food-btn').forEach(b=>b.addEventListener('click',e=>{
+      e.stopPropagation();
+      const grams=parseInt(b.dataset.food);
+      const data=getDateData(viewDate);
+      data.nutrition.protein+=grams;
+      saveState();renderChecklist();
+    }));
   }
 
   function toggleExercise(exId){
