@@ -437,7 +437,20 @@ const App = (() => {
     const data=getDateData(viewDate);
     const target=key==='water'?state.waterTarget:state.proteinTarget;
     data.nutrition[key]=data.nutrition[key]>=target?0:target;
-    saveState();renderChecklist();
+    saveState();
+    // Update in-place
+    const items=document.querySelectorAll('.check-item');
+    const item=key==='water'?items[items.length-2]:items[items.length-1];
+    if(!item)return;
+    const count=data.nutrition[key];
+    const pct=Math.min(100,(count/target)*100);
+    const countSpan=item.querySelector('.nutri-counter span');
+    if(countSpan)countSpan.textContent=count;
+    const bar=item.querySelector('.nutri-bar-fill');
+    if(bar){bar.style.width=`${pct}%`;bar.classList.remove('bump');void bar.offsetWidth;bar.classList.add('bump');}
+    const checkBtn=item.querySelector('.ci-check');
+    if(checkBtn)checkBtn.textContent=count>=target?'✓':'';
+    item.classList.toggle('done',count>=target);
   }
   function updateProteinDisplay(data) {
     const proteinCount = data.nutrition.protein;
@@ -466,7 +479,7 @@ const App = (() => {
   function adjustNutrition(key,dir){
     const data=getDateData(viewDate);
     data.nutrition[key]=Math.max(0,data.nutrition[key]+dir*(key==='water'?1:10));
-    saveState();renderChecklist();
+    saveState();
   }
 
   // ===== Stats =====
